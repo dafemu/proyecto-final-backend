@@ -11,6 +11,9 @@ const app = express();
 const routerProductos = Router();
 const routerCarrito = Router();
 
+//admin
+let admin = false;
+
 routerProductos.get('/', (req, res) => {
     console. log('GET request recibido');
     const productos = modController.getProductos();
@@ -79,11 +82,10 @@ routerCarrito.post('/', (req,res) => {
     console.log('POSTcarrito request recibido');
     const carrito = {
         timestamp:  Date.now(),
-        //productos: req.query.productos,
     };
     const newCarrito = modController.setCarrito(carrito);
     res.status(201).json({
-        result: 'Producto agregado al carrito',
+        result: 'Carrito Agregado',
         NuevoCarrito: newCarrito
     });
 });
@@ -93,7 +95,7 @@ routerCarrito.delete('/:id', (req,res) => {
     const id = Number(req.params.id);
     const carritoBorrado = modController.borrarCarrito(id);
     res.status(200).json({
-        result: 'Producto borrado del carrito',
+        result: 'Carrito Borrado',
         id: req.params.id,
         NuevoListadoCarrito: carritoBorrado,
     });
@@ -109,9 +111,8 @@ routerCarrito.get('/:id/productos', (req,res) => {
 routerCarrito.post('/:id/productos', (req,res) => {
     console.log('POSTcarrito dos request recibido');
     const idCarrito = Number(req.params.id);
-    const carrito = modController.getCarrito(idCarrito);
-
-    carrito.productos = {
+    
+    carritoProductoAdd = {
         timestamp: Date.now(),
         nombre: req.query.nombre,
         descripcion: req.query.descripcion,
@@ -120,32 +121,37 @@ routerCarrito.post('/:id/productos', (req,res) => {
         precio: req.query.precio,
         stock: req.query.stock,
     }
-
-    console.log("carrito: ", carrito);
-
-    const newCarrito = modController.setCarrito(carrito);
+    
+    const carrito = modController.agregarCarritoProductos(idCarrito, carritoProductoAdd);
 
     res.status(201).json({
         result: 'Producto agregado al carrito',
-        NuevoCarrito: newCarrito
+        NuevoCarrito: carrito
     });
 });
 
 routerCarrito.delete('/:id/productos/:id_prod', (req,res) => {
     console.log('DELETE request recibido');
-    const id = Number(req.params.id);
-    const productoBorrado = modController.borrarProducto(id);
+    const idCarrito = Number(req.params.id);
+    const idCarritoProd = Number(req.params.id_prod);
+
+    const carritoBorradoProducto = modController.borrarCarritoProducto(idCarrito, idCarritoProd);
     res.status(200).json({
-        result: 'Producto Borrado',
+        result: 'Producto borrado del carrito',
         id: req.params.id,
-        ListadoProductosNuevo: productoBorrado,
+        ListadoProductosNuevo: carritoBorradoProducto,
     });
 });
 
 
 //use
-app.use('/api/productos', routerProductos);
-app.use('/api/carrito', routerCarrito);
+if(admin){
+    app.use('/api/productos', routerProductos);
+    app.use('/api/carrito', routerCarrito);
+}else{
+    res.send({erro: -1, descripcion: 'No tienes Permiso'});
+}
+
 
 const server = app.listen(8080, ()=>{
     console.log(`Servidor http escuchando en el puerto ${server.address().port}`);

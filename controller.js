@@ -1,5 +1,6 @@
 let productos = [];
 let carrito = [];
+let prodCarrito = [];
 
 function getProductos(){
     return productos;
@@ -50,6 +51,33 @@ function getCarrito(id){
     return carrito.find(car => car.id === id) || { error: 'carrito no encontrado' };
 }
 
+function agregarCarritoProductos(id, productoCarrito){
+    let carritoEncontrado = carrito.find(car => car.id === id);
+    carritoEncontrado.productos = prodCarrito;
+
+    if(prodCarrito.length == 0){
+        productoCarrito.id = 1;
+    }else{
+        let id = prodCarrito[prodCarrito.length-1].id
+        productoCarrito.id = id + 1;
+    }
+
+    // prodCarrito = [...prodCarrito, productoCarrito];
+    prodCarrito.push(productoCarrito);
+
+    return carrito;
+}
+
+function borrarCarritoProducto(idCarrito, idProducto){
+    let carritoFind = carrito.find(carrito => carrito.id === idCarrito);
+
+    let carritoFilter = carritoFind.productos.filter(carritoProd => carritoProd.id !== idProducto);
+    // let carritoFilter = carritoFind.filter(carritoProd => carritoProd.id !== idProducto);
+    prodCarrito = carritoFilter;
+
+    return prodCarrito;
+}
+
 module.exports = {
     productos,
     getProductos,
@@ -59,4 +87,6 @@ module.exports = {
     setCarrito,
     borrarCarrito,
     getCarrito,
+    agregarCarritoProductos,
+    borrarCarritoProducto
 }
